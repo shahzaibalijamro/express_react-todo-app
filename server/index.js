@@ -46,6 +46,25 @@ app.get("/",(req,res)=>{
 })
 
 
+//get single todo
+app.post("/:id",(req,res)=>{
+    const { id } = req.params;
+    const index = todoArr.findIndex(item => item.id === +id);
+    if (index === -1) {
+        res.status(400).json({
+            message : "Id not found!"
+        })
+        return
+    }
+    res.status(200).json({
+        message: "Single To Do",
+        status : 200,
+        singleTodo : todoArr[index],
+        todoArr,
+    })
+})
+
+
 //delete todo
 app.delete("/:id",(req,res)=>{
     const {id} = req.params;
@@ -56,10 +75,39 @@ app.delete("/:id",(req,res)=>{
         })
         return
     }
+    const deletedTodo = todoArr[index]
     todoArr.splice(index,1);
     res.status(200).json({
         message: "To Do deleted",
         status : 200,
+        deletedTodo,
+        todoArr,
+    })
+})
+
+
+//edit todo
+app.put("/:id",(req,res)=>{
+    const {id} = req.params;
+    const index = todoArr.findIndex(item => item.id === +id)
+    if (index === -1) {
+        res.status(400).json({
+            message : "Todo not found!"
+        })
+        return
+    }
+    const { updatedTitle } = req.body;
+    if (!updatedTitle) {
+        res.status(400).json({
+            message : "Updated title not provided!"
+        })
+        return
+    }
+    todoArr[index].todo = updatedTitle;
+    res.status(200).json({
+        message: "To Do deleted",
+        status : 200,
+        updatedTodo : todoArr[index],
         todoArr,
     })
 })
