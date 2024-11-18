@@ -52,8 +52,8 @@ const App = () => {
           </div>
         </div>
         <div className='w-full flex justify-between items-center mt-10'>
-          <h1 onClick={() => setCurrent('toDo')} className='text-[16px] cursor-pointer font-inter text-white'>{todos.length > 0 ? `Tasks to do - ${todos.length}` : 'No tasks added'}</h1>
-          <h1 onClick={() => setCurrent('done')} className='text-[16px] cursor-pointer font-inter text-white'>{dones.length > 0 ? `Tasks done - ${dones.length}` : todos.length > 0 ? `Tasks done - ${dones.length}` : ''}</h1>
+          <h1 style={current === "done" ? {color:"inherit"} : {color:"white"}} onClick={() => setCurrent('toDo')} className='text-[16px] cursor-pointer font-inter text-white'>{todos.length > 0 ? `Tasks to do - ${todos.length}` : 'No tasks added'}</h1>
+          <h1 style={current === "toDo" ? {color:"inherit"} : {color:"white"}}  onClick={() => setCurrent('done')} className='text-[16px] cursor-pointer font-inter text-white'>{dones.length > 0 ? `Tasks done - ${dones.length}` : todos.length > 0 ? `Tasks done - ${dones.length}` : ''}</h1>
         </div>
         <div>
           {current === 'toDo' && <>
