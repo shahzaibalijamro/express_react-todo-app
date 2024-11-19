@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 html.modal-open {
-    overflow: hidden !important;
-    margin-right: 17px !important;
+    /* overflow: hidden !important; */
+    /* margin-right: var(--scrollbar-width, 17px); */
     scrollbar-gutter: auto !important;
-}  
+}
+html.modal-open.scrollbar-present {
+    margin-right: var(--scrollbar-width, 17px);
+    overflow: hidden !important;
+}

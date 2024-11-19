@@ -21,6 +21,7 @@ const App = () => {
     id: number
   }
   const addTodo = () => {
+    detectScrollbar()
     todos.push({
       todo: input,
       id: Date.now()
@@ -35,6 +36,7 @@ const App = () => {
     setInput('')
   }
   const deleteTodo = (index: number, current: string) => {
+    detectScrollbar()
     if (current === 'toDo') {
       const filteredTodos = todos.filter((_, i) => i !== index)
       setTodos(filteredTodos)
@@ -53,10 +55,20 @@ const App = () => {
     document.documentElement.classList.remove("modal-open");
     modalRef.current.close();
   }
+  function detectScrollbar() {
+    const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
+    document.documentElement.style.setProperty('--scrollbar-width', hasScrollbar ? '17px' : '0');
+    if (hasScrollbar) {
+      document.documentElement.classList.add('scrollbar-present');
+    } else {
+      document.documentElement.classList.remove('scrollbar-present');
+    }
+  }
+  window.addEventListener('load', detectScrollbar);
   return (
     <>
-      <div className="bg-[#0D0714] h-full min-h-[100vh] w-full flex justify-center items-start">
-        <div className="text-center bg-[#1D1825] w-full my-20 max-w-[600px] p-8">
+      <div className="bg-[#0D0714] outer h-full min-h-[100vh] w-full flex justify-center items-start">
+        <div className="text-center bg-[#1D1825] w-full my-20 max-w-[600px] mx-[12px] p-8">
           <div className="flex items-center">
             <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Add To Do" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
             <div onClick={addTodo} className='bg-[#9E78CF] cursor-pointer active:bg-[#7d49c0] hover:bg-[#9064c9] p-[10px] rounded-md'>
@@ -121,12 +133,14 @@ const App = () => {
         </div>
       </div>
       <dialog ref={modalRef} id="my_modal_4" className="modal w-full flex justify-center">
-        <div className="modal-box me-[17px] max-w-[500px]">
-          <h3 className="text-lg font-bold">Hello!</h3>
-          <p className="py-4">Click the button below to close</p>
+        <div className="modal-box bg-[#1D1825] me-[17px] max-w-[500px]">
+          <h3 className="text-lg text-center font-bold">Edit To Do!</h3>
           <div className="modal-action">
-            <form onSubmit={editTodo} method="dialog">
-              <button className="btn">Close</button>
+            <form onSubmit={editTodo} className='flex flex-col w-full' method="dialog">
+              <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Edit" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
+              <div className='w-full text-end mt-[15px]'>
+              <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Button</button>
+              </div>
             </form>
           </div>
         </div>
