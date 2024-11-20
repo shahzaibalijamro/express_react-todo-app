@@ -24,18 +24,33 @@ const App = () => {
     }).catch(err => {
       console.log(err);
     })
+    axios('http://localhost:3000/dones/')
+    .then(res => {
+      console.log(res.data);
+      setDones(res.data.doneArr)
+    }).catch(err => {
+      console.log(err);
+    })
   },[])
   interface Todo {
     todo: string,
     id: number
   }
   interface Dones {
-    todo: string,
+    done: string,
     id: number
   }
-  const addTodo = (e:any) => {
+  const addTodo = async (e:any) => {
     e.preventDefault();
     detectScrollbar()
+    try {
+      const response = await axios.post("http://localhost:3000/",{
+        title : input
+      })
+      console.log(response.data); 
+    } catch (error) {
+      console.log(error);
+    }
     todos.push({
       todo: input,
       id: Date.now()
@@ -43,14 +58,29 @@ const App = () => {
     setTodos(todos);
     setInput('')
   }
-  const addDoneTodos = (obj: { todo: string, id: number }, index: number) => {
-    setDones([...dones, { todo: obj.todo, id: Date.now() }]);
+  const addDoneTodos = async (obj: { todo: string, id: number }, index: number) => {
+    try {
+      const add = await axios.post("http://localhost:3000/dones/",{
+        title : obj.todo
+      })
+      console.log(add.data);
+      const deleteTodo = await axios.delete(`http://localhost:3000/${todos[index].id}`)
+      console.log(deleteTodo.data);
+    } catch (error) {
+      console.log(error);
+    }
+    setDones([...dones, { done: obj.todo, id: Date.now() }]);
     todos.splice(index, 1)
     setTodos(todos)
     setInput('')
   }
-  const deleteTodo = (index: number, current: string) => {
-    detectScrollbar()
+  const deleteTodo = async (index: number, current: string) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/${todos[index].id}`)
+      console.log(response.data); 
+    } catch (error) {
+      console.log(error);
+    }
     if (current === 'toDo') {
       const filteredTodos = todos.filter((_, i) => i !== index)
       setTodos(filteredTodos)
@@ -60,6 +90,7 @@ const App = () => {
       const filteredDones = dones.filter((_, i) => i !== index)
       setDones(filteredDones)
     }
+    detectScrollbar()
   }
   const openModal = (index: number, current: string) => {
     document.documentElement.classList.add("modal-open");
@@ -68,7 +99,7 @@ const App = () => {
       setEdit(todos[index].todo)
     }
     if (current === 'done') {
-      setEdit(dones[index].todo)
+      setEdit(dones[index].done)
       setCurrentEdit('done')
     }
     setEditIndex(index)
@@ -76,12 +107,20 @@ const App = () => {
     console.log(editIndex, '=> edit index');
     detectScrollbar();
   }
-  const editTodo = () => {
+  const editTodo = async () => {
     if (currentEdit === 'done') {
-      dones[editIndex].todo = edit;
+      dones[editIndex].done = edit;
       setDones([...dones])
       setCurrentEdit(null)
       return
+    }
+    try {
+      const response = await axios.put(`http://localhost:3000/${todos[editIndex].id}`,{
+        updatedTitle : edit
+      })
+      console.log(response.data); 
+    } catch (error) {
+      console.log(error);
     }
     todos[editIndex].todo = edit;
     setTodos([...todos])
@@ -149,7 +188,7 @@ const App = () => {
               {dones.length > 0 ? dones.map((item: Dones, index: number) => {
                 return <div key={item.id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
                   <div>
-                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.todo}</h1>
+                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.done}</h1>
                   </div>
                   <div>
                     <div className='flex items-center'>
