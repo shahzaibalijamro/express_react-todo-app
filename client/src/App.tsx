@@ -10,7 +10,10 @@ const App = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [dones, setDones] = useState<Dones[]>([]);
   const [input, setInput] = useState<string>('');
+  const [edit,setEdit] = useState<string>('');
+  const [editIndex,setEditIndex] = useState<number>(0)
   const [current, setCurrent] = useState<'toDo' | 'done'>('toDo');
+  const [currentEdit, setCurrentEdit] = useState<'toDo' | 'done' | null>(null);
   const modalRef = useRef<any>()
   interface Todo {
     todo: string,
@@ -50,10 +53,30 @@ const App = () => {
   const openModal = (index: number, current: string) => {
     document.documentElement.classList.add("modal-open");
     modalRef.current.showModal();
+    if (current === 'toDo') {
+      setEdit(todos[index].todo)
+    }
+    if (current === 'done') {
+      setEdit(dones[index].todo)
+      setCurrentEdit('done')
+    }
+    setEditIndex(index)
+    console.log(edit, '=> edit');
+    console.log(editIndex, '=> edit index');
   }
   const editTodo = () => {
+    if (currentEdit === 'done') {
+      dones[editIndex].todo = edit;
+      setDones([...dones])
+      setCurrentEdit(null)
+      return
+    }
+    todos[editIndex].todo = edit;
+    setTodos([...todos])
     document.documentElement.classList.remove("modal-open");
     modalRef.current.close();
+    setEditIndex(0)
+    setCurrentEdit(null)
   }
   function detectScrollbar() {
     const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
@@ -118,6 +141,7 @@ const App = () => {
                     <div className='flex items-center'>
                       <img
                         src={Pen}
+                        onClick={() => openModal(index, 'done')}
                         className="me-4 cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]"
                         alt="Done"
                       />
@@ -137,7 +161,7 @@ const App = () => {
           <h3 className="text-lg text-center font-bold">Edit To Do!</h3>
           <div className="modal-action">
             <form onSubmit={editTodo} className='flex flex-col w-full' method="dialog">
-              <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Edit" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
+              <input type="text" value={edit} onChange={e => setEdit(e.target.value)} placeholder="Edit" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
               <div className='w-full text-end mt-[15px]'>
               <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Button</button>
               </div>
