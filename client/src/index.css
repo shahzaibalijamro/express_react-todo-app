@@ -2,35 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* html.modal-open {
-    /* overflow: hidden !important !important ; */
-    /* margin-right: var(--scrollbar-width, 17px) !important ; */
-    /* scrollbar-gutter: auto !important !important ; */
-/* } */ */
+::-webkit-scrollbar {
+    width: 8px !important;
+  }
+  
 html.modal-open.scrollbar-present {
     margin-right: var(--scrollbar-width, 17px) ;
-    /* overflow: hidden !important ; */
 }
-
-/* For Webkit browsers (Chrome, Edge, Safari) */
-::-webkit-scrollbar {
-    width: 12px !important ; /* Width of the scrollbar */
-    height: 12px !important ; /* Height of the scrollbar */
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(45deg, #6a11cb, #2575fc) !important ; /* Scrollbar handle color */
-    border-radius: 6px !important ; /* Rounded corners */
-    border: 3px solid transparent !important ; /* Space between scrollbar and its track */
-    background-clip: content-box !important ; /* Makes the border visible */
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #f4f4f4 !important ; /* Track background color */
-    border-radius: 6px !important ; /* Rounded corners */
-  }
-  
-  /* Hover effect for the scrollbar */
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(45deg, #4c00a7, #1b54d9) !important ;
-  }

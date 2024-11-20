@@ -5,7 +5,8 @@ import Pen from './assets/editing.png';
 import "@fontsource/inter/400.css";
 import './index.css'
 import "@fontsource/inter/700.css";
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 const App = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [dones, setDones] = useState<Dones[]>([]);
@@ -15,6 +16,15 @@ const App = () => {
   const [current, setCurrent] = useState<'toDo' | 'done'>('toDo');
   const [currentEdit, setCurrentEdit] = useState<'toDo' | 'done' | null>(null);
   const modalRef = useRef<any>()
+  useEffect(()=>{
+    axios('http://localhost:3000/')
+    .then(res => {
+      console.log(res.data);
+      setTodos(res.data.todoArr)
+    }).catch(err => {
+      console.log(err);
+    })
+  },[])
   interface Todo {
     todo: string,
     id: number
@@ -23,7 +33,8 @@ const App = () => {
     todo: string,
     id: number
   }
-  const addTodo = () => {
+  const addTodo = (e:any) => {
+    e.preventDefault();
     detectScrollbar()
     todos.push({
       todo: input,
@@ -63,6 +74,7 @@ const App = () => {
     setEditIndex(index)
     console.log(edit, '=> edit');
     console.log(editIndex, '=> edit index');
+    detectScrollbar();
   }
   const editTodo = () => {
     if (currentEdit === 'done') {
@@ -77,9 +89,11 @@ const App = () => {
     modalRef.current.close();
     setEditIndex(0)
     setCurrentEdit(null)
+    detectScrollbar();
   }
   function detectScrollbar() {
     const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
+    console.log('Scrollbar detected:', hasScrollbar);
     document.documentElement.style.setProperty('--scrollbar-width', hasScrollbar ? '17px' : '0');
     if (hasScrollbar) {
       document.documentElement.classList.add('scrollbar-present');
@@ -92,12 +106,12 @@ const App = () => {
     <>
       <div className="bg-[#0D0714] outer h-full min-h-[100vh] w-full flex justify-center items-start">
         <div className="text-center bg-[#1D1825] w-full my-20 max-w-[600px] mx-[12px] p-8">
-          <div className="flex items-center">
-            <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Add To Do" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
-            <div onClick={addTodo} className='bg-[#9E78CF] cursor-pointer active:bg-[#7d49c0] hover:bg-[#9064c9] p-[10px] rounded-md'>
+          <form name='todo' onSubmit={addTodo} className="flex items-center">
+            <input required type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Add To Do" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
+            <button type='submit' className='bg-[#9E78CF] cursor-pointer active:bg-[#7d49c0] hover:bg-[#9064c9] p-[10px] rounded-md'>
               <img src={Plus} alt="Add To Do" />
-            </div>
-          </div>
+            </button>
+          </form>
           <div className='w-full flex justify-between items-center mt-10'>
             <h1 style={current === "done" ? { color: "inherit" } : { color: "white" }} onClick={() => setCurrent('toDo')} className='text-[16px] cursor-pointer font-inter text-white'>{todos.length > 0 ? `Tasks to do - ${todos.length}` : 'No tasks added'}</h1>
             <h1 style={current === "toDo" ? { color: "inherit" } : { color: "white" }} onClick={() => setCurrent('done')} className='text-[16px] cursor-pointer font-inter text-white'>{dones.length > 0 ? `Tasks done - ${dones.length}` : todos.length > 0 ? `Tasks done - ${dones.length}` : ''}</h1>

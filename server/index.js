@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import express from "express"
-
+import cors from "cors"
 //configuring env
 dotenv.config()
 
@@ -10,9 +10,16 @@ const port = process.env.PORT
 
 //middleware
 app.use(express.json())
+app.use(cors());
+
 
 //global array
-const todoArr = []
+const todoArr = [
+    {
+        todo: 'Placeholder To Do',
+        id: Date.now()
+    }
+]
 
 
 //add todo
