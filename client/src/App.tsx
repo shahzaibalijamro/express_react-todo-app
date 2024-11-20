@@ -7,7 +7,9 @@ import './index.css'
 import "@fontsource/inter/700.css";
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+
 const App = () => {
+  //states
   const [todos, setTodos] = useState<Todo[]>([]);
   const [dones, setDones] = useState<Dones[]>([]);
   const [input, setInput] = useState<string>('');
@@ -15,7 +17,11 @@ const App = () => {
   const [editIndex,setEditIndex] = useState<number>(0)
   const [current, setCurrent] = useState<'toDo' | 'done'>('toDo');
   const [currentEdit, setCurrentEdit] = useState<'toDo' | 'done' | null>(null);
+
+  //ref
   const modalRef = useRef<any>()
+
+  //getData
   useEffect(()=>{
     axios('http://localhost:3000/')
     .then(res => {
@@ -32,6 +38,8 @@ const App = () => {
       console.log(err);
     })
   },[])
+
+  //interfaces
   interface Todo {
     todo: string,
     id: number
@@ -40,6 +48,8 @@ const App = () => {
     done: string,
     id: number
   }
+
+  //adds Todos
   const addTodo = async (e:any) => {
     e.preventDefault();
     detectScrollbar()
@@ -58,13 +68,17 @@ const App = () => {
     setTodos(todos);
     setInput('')
   }
+
+  //adds Dones
   const addDoneTodos = async (obj: { todo: string, id: number }, index: number) => {
+    console.log(obj.todo);
+    
     try {
-      const add = await axios.post("http://localhost:3000/dones/",{
-        title : obj.todo
+      const add = await axios.post("http://localhost:3000/done",{
+        title : 'sgds'
       })
       console.log(add.data);
-      const deleteTodo = await axios.delete(`http://localhost:3000/${todos[index].id}`)
+      const deleteTodo = await axios.delete(`http://localhost:3000/${obj.id}`)
       console.log(deleteTodo.data);
     } catch (error) {
       console.log(error);
@@ -74,24 +88,34 @@ const App = () => {
     setTodos(todos)
     setInput('')
   }
+
+  //deletes Todos
   const deleteTodo = async (index: number, current: string) => {
-    try {
-      const response = await axios.delete(`http://localhost:3000/${todos[index].id}`)
-      console.log(response.data); 
-    } catch (error) {
-      console.log(error);
-    }
     if (current === 'toDo') {
+      try {
+        const response = await axios.delete(`http://localhost:3000/${todos[index].id}`)
+        console.log(response.data); 
+      } catch (error) {
+        console.log(error);
+      }
       const filteredTodos = todos.filter((_, i) => i !== index)
       setTodos(filteredTodos)
       return
     }
     if (current === 'done') {
+      try {
+        const response = await axios.delete(`http://localhost:3000/dones/${dones[index].id}`)
+        console.log(response.data); 
+      } catch (error) {
+        console.log(error);
+      }
       const filteredDones = dones.filter((_, i) => i !== index)
       setDones(filteredDones)
     }
     detectScrollbar()
   }
+
+  //opens modal
   const openModal = (index: number, current: string) => {
     document.documentElement.classList.add("modal-open");
     modalRef.current.showModal();
@@ -107,10 +131,20 @@ const App = () => {
     console.log(editIndex, '=> edit index');
     detectScrollbar();
   }
+
+  //edits Todos
   const editTodo = async () => {
     if (currentEdit === 'done') {
       dones[editIndex].done = edit;
       setDones([...dones])
+      try {
+        const response = await axios.put(`http://localhost:3000/dones/${dones[editIndex].id}`,{
+          updatedTitle : edit
+        })
+        console.log(response.data); 
+      } catch (error) {
+        console.log(error);
+      }
       setCurrentEdit(null)
       return
     }
@@ -130,6 +164,8 @@ const App = () => {
     setCurrentEdit(null)
     detectScrollbar();
   }
+
+  //checks Scrollbar
   function detectScrollbar() {
     const hasScrollbar = window.innerWidth > document.documentElement.clientWidth;
     console.log('Scrollbar detected:', hasScrollbar);
