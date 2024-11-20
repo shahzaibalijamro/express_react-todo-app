@@ -52,10 +52,12 @@ const App = () => {
   //adds Todos
   const addTodo = async (e:any) => {
     e.preventDefault();
+    const id = Date.now()
     detectScrollbar()
     try {
       const response = await axios.post("http://localhost:3000/",{
-        title : input
+        title : input,
+        id,
       })
       console.log(response.data); 
     } catch (error) {
@@ -63,7 +65,7 @@ const App = () => {
     }
     todos.push({
       todo: input,
-      id: Date.now()
+      id,
     });
     setTodos(todos);
     setInput('')
@@ -71,21 +73,19 @@ const App = () => {
 
   //adds Dones
   const addDoneTodos = async (obj: { todo: string, id: number }, index: number) => {
-    console.log(obj.todo);
-    
+    console.log(obj.id);
+    console.log(todos[index].id);
     try {
-      const add = await axios.post("http://localhost:3000/done",{
-        title : 'sgds'
+      const add = await axios.post("http://localhost:3000/dones/add",{
+        title : obj.todo,
+        id: obj.id
       })
       console.log(add.data);
-      const deleteTodo = await axios.delete(`http://localhost:3000/${obj.id}`)
-      console.log(deleteTodo.data);
+      setDones([...dones, { done: obj.todo, id: obj.id }]);
+      setTodos(todos.filter((_, i) => i !== index))
     } catch (error) {
       console.log(error);
     }
-    setDones([...dones, { done: obj.todo, id: Date.now() }]);
-    todos.splice(index, 1)
-    setTodos(todos)
     setInput('')
   }
 
@@ -98,13 +98,12 @@ const App = () => {
       } catch (error) {
         console.log(error);
       }
-      const filteredTodos = todos.filter((_, i) => i !== index)
-      setTodos(filteredTodos)
+      setTodos(todos.filter((_, i) => i !== index))
       return
     }
     if (current === 'done') {
       try {
-        const response = await axios.delete(`http://localhost:3000/dones/${dones[index].id}`)
+        const response = await axios.delete(`http://localhost:3000/dones/delete/${dones[index].id}`)
         console.log(response.data); 
       } catch (error) {
         console.log(error);
@@ -138,7 +137,7 @@ const App = () => {
       dones[editIndex].done = edit;
       setDones([...dones])
       try {
-        const response = await axios.put(`http://localhost:3000/dones/${dones[editIndex].id}`,{
+        const response = await axios.put(`http://localhost:3000/dones/edit/${dones[editIndex].id}`,{
           updatedTitle : edit
         })
         console.log(response.data); 
