@@ -1,11 +1,11 @@
 import express from "express"
-import { addTodo , allTodo , editTodo , singleTodo , deleteTodo , addDone , allDone, editDone, deleteDone } from "../controllers/todo.controllers.js";
+import { addTodo , allTodos , editTodo , singleTodo , deleteTodo , addDone , allDones, editDone, deleteDone } from "../controllers/todo.controllers.js";
 
 const router = express.Router();
 router.post("/addtodo", addTodo)
 router.post("/adddone", addDone)
-router.get("/alltodo", allTodo)
-router.get("/alldone", allDone)
+router.get("/alltodos", allTodos)
+router.get("/alldones", allDones)
 router.put("/edittodo/:id", editTodo)
 router.put("/editdone/:id", editDone)
 router.get("/singletodo/:id", singleTodo)
