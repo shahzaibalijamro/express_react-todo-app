@@ -13,7 +13,7 @@ const doneArr = [
 ]
 
 const addTodo = (req, res) => {
-    const { title, id } = req.body;
+    const { title } = req.body;
     if (!title) {
         res.status(400).json({
             message: "Title not recieved!"
@@ -22,7 +22,7 @@ const addTodo = (req, res) => {
     }
     todoArr.push({
         todo: title,
-        id,
+        id : Date.now(),
     })
     res.status(201).json({
         message: "To Do added",
@@ -111,7 +111,7 @@ const editTodo = (req,res)=>{
 
 //adds done
 const addDone = (req,res) => {
-    const {title,id} = req.body;
+    const {title} = req.body;
     const index = todoArr.findIndex(item => item.id === +id)
     if (!title | index === -1) {
         res.status(400).json({
@@ -121,7 +121,7 @@ const addDone = (req,res) => {
     }
     doneArr.push({
         done: title,
-        id,
+        id : Date.now(),
     })
     todoArr.splice(index,1);
     res.status(201).json({
