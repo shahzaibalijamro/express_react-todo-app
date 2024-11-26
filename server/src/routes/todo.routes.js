@@ -3,7 +3,7 @@ import { addTodo , allTodos , editTodo , singleTodo , deleteTodo , addDone , all
 
 const router = express.Router();
 router.post("/addtodo", addTodo)
-router.post("/adddone", addDone)
+router.post("/adddone/:id", addDone)
 router.get("/alltodos", allTodos)
 router.get("/alldones", allDones)
 router.put("/edittodo/:id", editTodo)

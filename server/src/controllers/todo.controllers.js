@@ -10,7 +10,7 @@ const addTodo = async (req, res) => {
         if (done === undefined) {
             return res.status(400).json({ message: "Todo status (done) is required!" });
         }
-        const newTodo = await todoModel.create({title,done})
+        const newTodo = await todoModel.create({ title, done })
         res.status(201).json({
             message: "To Do added",
             status: 201,
@@ -36,101 +36,143 @@ const allTodos = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Could not fetch all todos",
-            error : error.message
+            error: error.message
         })
     }
 }
 
 
 //gets single todo
-const singleTodo = (req, res) => {
+const singleTodo = async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
-            message : "Invalid ID"
+            message: "Invalid ID",
+            status: 400
         })
     }
-    const getSingleTodo = todoModel.findById(id)
-        res.status(400).json({
-            message: "Id not found!"
+    try {
+        const getSingleTodo = await todoModel.findById(id)
+        if (!getSingleTodo) {
+            return res.status(404).json({
+                message: "Todo not found",
+                status: 404
+            });
+        }
+        res.status(200).json({
+            message: "Single To Do",
+            status: 200,
+            singleTodo: getSingleTodo
         })
-    res.status(200).json({
-        message: "Single To Do",
-        status: 200,
-        singleTodo: todoArr[index],
-        todoArr,
-    })
+    } catch (error) {
+        res.status(500).json({
+            message: "Could not fetch single todo",
+            error: error.message
+        })
+    }
 }
 
 
 //deletes todos
-const deleteTodo = (req, res) => {
+const deleteTodo = async (req, res) => {
     const { id } = req.params;
-    const index = todoArr.findIndex(item => item.id === +id)
-    if (index === -1) {
-        res.status(400).json({
-            message: "Todo not found!"
-        });
-        return
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            message: "Invalid ID",
+            status: 400
+        })
     }
-    const deletedTodo = todoArr[index]
-    todoArr.splice(index, 1);
-    res.status(200).json({
-        message: "To Do deleted",
-        status: 200,
-        deletedTodo,
-        todoArr,
-    })
+    try {
+        const deletedTodo = await todoModel.findByIdAndDelete(id)
+        if (!deletedTodo) {
+            res.status(404).json({
+                message: "Todo not found",
+            })
+        }
+        res.status(200).json({
+            message: "Todo deleted successfully",
+            status: 200,
+            data: deletedTodo
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Could not delete todo",
+            error: error.message
+        })
+    }
 }
 
 
 //edits todos
-const editTodo = (req, res) => {
+const editTodo = async (req, res) => {
     const { id } = req.params;
-    const index = todoArr.findIndex(item => item.id === +id)
-    if (index === -1) {
+    const { title,done } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            message: "Invalid ID!"
+        })
+    }
+    if (!title) {
         res.status(400).json({
-            message: "Todo not found!"
+            message: "Title not provided!"
         })
         return
     }
-    const { updatedTitle } = req.body;
-    if (!updatedTitle) {
+    if (done === undefined) {
         res.status(400).json({
-            message: "Updated title not provided!"
+            message: "Todo status not provided!"
         })
         return
     }
-    todoArr[index].todo = updatedTitle;
-    res.status(200).json({
-        message: "To Do updated",
-        status: 200,
-        updatedTodo: todoArr[index],
-        todoArr,
-    })
+    try {
+        const updatedTodo = await todoModel.findByIdAndUpdate(id,{title,done},{ new: true, runValidators: true })
+        if (!updatedTodo) {
+            return res.status(404).json({
+                message: "Todo not found",
+                status: 404
+            });
+        }
+        res.status(200).json({
+            message: "To Do updated",
+            status: 200,
+            updatedTodo,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Could not update todo",
+            error: error.message
+        })
+    }
 }
 
 
 //adds done
-const addDone = (req, res) => {
-    const { title } = req.body;
-    const index = todoArr.findIndex(item => item.id === +id)
-    if (!title | index === -1) {
-        res.status(400).json({
-            message: "Todo not found!"
+const addDone = async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            message: "Invalid ID!"
         })
-        return
     }
-    doneArr.push({
-        done: title,
-        id: Date.now(),
-    })
-    todoArr.splice(index, 1);
-    res.status(201).json({
-        message: "Done added",
-        status: 201,
-        doneArr,
-    })
+    try {
+        const addDone = await todoModel.findByIdAndUpdate(id,{done : true},{ new: true, runValidators: true })
+        if (!addDone) {
+            return res.status(404).json({
+                message: "Todo not found",
+                status: 404
+            });
+        }
+        res.status(200).json({
+            message : "Done added",
+            status: 200,
+            done: addDone
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Could not add done",
+            error: error.message
+        })
+    }
 }
 
 
