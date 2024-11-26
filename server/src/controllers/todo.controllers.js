@@ -3,14 +3,11 @@ import todoModel from "../model/todo.model.js";
 
 const addTodo = async (req, res) => {
     try {
-        const { title, done } = req.body;
+        const { title } = req.body;
         if (!title) {
             return res.status(400).json({ message: "Title is required!" });
         }
-        if (done === undefined) {
-            return res.status(400).json({ message: "Todo status (done) is required!" });
-        }
-        const newTodo = await todoModel.create({ title, done })
+        const newTodo = await todoModel.create({ title, done: false })
         res.status(201).json({
             message: "To Do added",
             status: 201,
@@ -106,7 +103,7 @@ const deleteTodo = async (req, res) => {
 //edits todos
 const editTodo = async (req, res) => {
     const { id } = req.params;
-    const { title,done } = req.body;
+    const { title } = req.body;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({
             message: "Invalid ID!"
@@ -118,14 +115,8 @@ const editTodo = async (req, res) => {
         })
         return
     }
-    if (done === undefined) {
-        res.status(400).json({
-            message: "Todo status not provided!"
-        })
-        return
-    }
     try {
-        const updatedTodo = await todoModel.findByIdAndUpdate(id,{title,done},{ new: true, runValidators: true })
+        const updatedTodo = await todoModel.findByIdAndUpdate(id, { title }, { new: true, runValidators: true })
         if (!updatedTodo) {
             return res.status(404).json({
                 message: "Todo not found",
@@ -155,7 +146,7 @@ const addDone = async (req, res) => {
         })
     }
     try {
-        const addDone = await todoModel.findByIdAndUpdate(id,{done : true},{ new: true, runValidators: true })
+        const addDone = await todoModel.findByIdAndUpdate(id, { done: true }, { new: true, runValidators: true })
         if (!addDone) {
             return res.status(404).json({
                 message: "Todo not found",
@@ -163,7 +154,7 @@ const addDone = async (req, res) => {
             });
         }
         res.status(200).json({
-            message : "Done added",
+            message: "Done added",
             status: 200,
             done: addDone
         })
@@ -177,60 +168,25 @@ const addDone = async (req, res) => {
 
 
 //gets all dones
-const allDones = (req, res) => {
-    res.status(200).json({
-        message: "All Dones",
-        status: 200,
-        doneArr
-    })
-}
-
-
-//edits dones
-const editDone = (req, res) => {
-    const { id } = req.params;
-    const index = doneArr.findIndex(item => item.id === +id)
-    if (index === -1) {
-        res.status(400).json({
-            message: "Done not found!"
+const allDones = async (req, res) => {
+    try {
+        const allDones = await todoModel.find({done : true})
+        if (!allDones) {
+            return res.status(404).json({
+                message: "Could not find any dones",
+                status: 404
+            })
+        }
+        res.status(200).json({
+            status: 200,
+            allDones,
         })
-        return
-    }
-    const { updatedTitle } = req.body;
-    if (!updatedTitle) {
-        res.status(400).json({
-            message: "Updated Done not provided!"
+    } catch (error) {
+        res.status(500).json({
+            message: "Could not fetch all dones",
+            error: error.message
         })
-        return
     }
-    doneArr[index].done = updatedTitle;
-    res.status(200).json({
-        message: "Done updated",
-        status: 200,
-        updatedDone: doneArr[index],
-        doneArr,
-    })
 }
 
-
-//deletes dones
-const deleteDone = (req, res) => {
-    const { id } = req.params;
-    const index = doneArr.findIndex(item => item.id === +id)
-    if (index === -1) {
-        res.status(400).json({
-            message: "Done not found!"
-        });
-        return
-    }
-    const deletedDone = doneArr[index]
-    doneArr.splice(index, 1);
-    res.status(200).json({
-        message: "Done deleted",
-        status: 200,
-        deletedDone,
-        doneArr,
-    })
-}
-
-export { addTodo, allTodos, editTodo, singleTodo, deleteTodo, addDone, allDones, editDone, deleteDone }
+export { addTodo, allTodos, editTodo, singleTodo, deleteTodo, addDone, allDones }
