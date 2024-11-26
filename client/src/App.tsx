@@ -23,20 +23,7 @@ const App = () => {
 
   //getData
   useEffect(()=>{
-    axios('http://localhost:3000/')
-    .then(res => {
-      console.log(res.data);
-      setTodos(res.data.todoArr)
-    }).catch(err => {
-      console.log(err);
-    })
-    axios('http://localhost:3000/dones/')
-    .then(res => {
-      console.log(res.data);
-      setDones(res.data.doneArr)
-    }).catch(err => {
-      console.log(err);
-    })
+    
   },[])
 
   //interfaces
@@ -54,15 +41,6 @@ const App = () => {
     e.preventDefault();
     const id = Date.now()
     detectScrollbar()
-    try {
-      const response = await axios.post("http://localhost:3000/",{
-        title : input,
-        id,
-      })
-      console.log(response.data); 
-    } catch (error) {
-      console.log(error);
-    }
     todos.push({
       todo: input,
       id,
@@ -73,14 +51,7 @@ const App = () => {
 
   //adds Dones
   const addDoneTodos = async (obj: { todo: string, id: number }, index: number) => {
-    console.log(obj.id);
-    console.log(todos[index].id);
     try {
-      const add = await axios.post("http://localhost:3000/dones/add",{
-        title : obj.todo,
-        id: obj.id
-      })
-      console.log(add.data);
       setDones([...dones, { done: obj.todo, id: obj.id }]);
       setTodos(todos.filter((_, i) => i !== index))
     } catch (error) {
@@ -92,22 +63,10 @@ const App = () => {
   //deletes Todos
   const deleteTodo = async (index: number, current: string) => {
     if (current === 'toDo') {
-      try {
-        const response = await axios.delete(`http://localhost:3000/${todos[index].id}`)
-        console.log(response.data); 
-      } catch (error) {
-        console.log(error);
-      }
       setTodos(todos.filter((_, i) => i !== index))
       return
     }
     if (current === 'done') {
-      try {
-        const response = await axios.delete(`http://localhost:3000/dones/delete/${dones[index].id}`)
-        console.log(response.data); 
-      } catch (error) {
-        console.log(error);
-      }
       const filteredDones = dones.filter((_, i) => i !== index)
       setDones(filteredDones)
     }
@@ -136,24 +95,8 @@ const App = () => {
     if (currentEdit === 'done') {
       dones[editIndex].done = edit;
       setDones([...dones])
-      try {
-        const response = await axios.put(`http://localhost:3000/dones/edit/${dones[editIndex].id}`,{
-          updatedTitle : edit
-        })
-        console.log(response.data); 
-      } catch (error) {
-        console.log(error);
-      }
       setCurrentEdit(null)
       return
-    }
-    try {
-      const response = await axios.put(`http://localhost:3000/${todos[editIndex].id}`,{
-        updatedTitle : edit
-      })
-      console.log(response.data); 
-    } catch (error) {
-      console.log(error);
     }
     todos[editIndex].todo = edit;
     setTodos([...todos])
