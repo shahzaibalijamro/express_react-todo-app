@@ -50,7 +50,7 @@ const registerUser = async (req, res) => {
                 _id: user._id
             },
             tokens: {
-                accessToken,refreshToken
+                accessToken
             }
         })
     } catch (error) {
@@ -67,13 +67,13 @@ const registerUser = async (req, res) => {
 }
 
 
-const loginUser = async function () {
+const loginUser = async function (req,res) {
     const { username,email, password } = req.body;
     try {
         if (!username && !email) return res.status(400).json({
             message: "Username or email is required!"
         })
-        const checkUser = await User.findOne(
+        const user = await User.findOne(
             {
                 $or: [
                     {email:email},
@@ -81,13 +81,34 @@ const loginUser = async function () {
                 ]
             }
         )
-        if(!checkUser) return res.status(404).json({
+        if(!user) return res.status(404).json({
             message: "No user found with such credentials"
         })
-        const isPasswordCorrect = await bcrypt.compare(password,checkUser.password)
-        console.log(isPasswordCorrect);
+        const isPasswordCorrect = await bcrypt.compare(password,user.password)
+        if (!isPasswordCorrect) return res.status(401).json({
+            message: "Invalid credentials"
+        })
+        const {accessToken, refreshToken} = generateAccessandRefreshTokens(user)
+        const updateRefreshTokenInDB = await User.findOneAndUpdate({email : email}, {$set: {refreshToken}}, {new: true})
+        if (!updateRefreshTokenInDB) return res.status(404).json({ message: "User not found" });
+        res
+        .cookie("accessToken",accessToken,{httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
+        .status(200)
+        .json({
+            message: "User successfully logged in!",
+            user : {
+                username: user.username,
+                fullname: user.fullname,
+                email: user.email,
+                _id: user._id
+            },
+            tokens: {
+                accessToken
+            }
+        })
     } catch (error) {
         console.log(error);
+        res.status(500).json({ message: "An error occurred during login" });
     }
 }
 
