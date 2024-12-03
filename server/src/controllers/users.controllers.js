@@ -1,24 +1,59 @@
 import mongoose from "mongoose";
 import User from "../model/users.models.js"
 
+
+// generates tokens
 const generateAccessandRefreshTokens = function (user) {
-    const accessToken = jwt.sign({ email: user.email }, process.env.ACCESS_JWT_SECRET, {
-        expiresIn: "6h",
-      });
+    const accessToken = jwt.sign({_id: user._id, email: user.email }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+    });
+    const refreshToken = jwt.sign({email: user.email, username: user.username, _id: user._id,}, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: "10d",
+    });
+    return {accessToken,refreshToken}
 }
 
 
+
+// registers User
 const registerUser = async (req, res) => {
+
+    //getting data
     const { username, fullname, email, password } = req.body;
+
     try {
-        const user = await User.create({username,fullname,email,password})
-        const user2 = new User({username,fullname,email,password})
-        await user2.save();
-        res.status(201).json({
+
+        //creating data instance
+        const user = new User({ username, fullname, email, password })
+
+        //generating and adding the tokens midway through
+        const {accessToken,refreshToken} = generateAccessandRefreshTokens(user)
+        user.refreshToken = refreshToken
+
+        //saving the data
+        await user.save();
+
+        //sending response if user successfully created
+        res
+
+        //Adding cookies
+        .cookie("accessToken", accessToken, {httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
+
+        //status code with json response
+        .status(201).json({
             message: "New user created",
-            user,
+            newUser : {
+                username: user.username,
+                fullname: user.fullname,
+                email: user.email,
+                _id: user._id
+            },
+            tokens: {
+                accessToken,refreshToken
+            }
         })
     } catch (error) {
+        //error checking
         if (error.name === 'ValidationError') {
             return res.status(400).json({ message: error.message });
         }
@@ -29,4 +64,4 @@ const registerUser = async (req, res) => {
     }
 }
 
-export {registerUser}
+export { registerUser }
