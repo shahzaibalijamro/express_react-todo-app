@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import User from "../model/users.models.js"
 import jwt from "jsonwebtoken"
-
+import bcrypt from "bcrypt"
 
 // generates tokens
 const generateAccessandRefreshTokens = function (user) {
@@ -84,9 +84,11 @@ const loginUser = async function () {
         if(!checkUser) return res.status(404).json({
             message: "No user found with such credentials"
         })
+        const isPasswordCorrect = await bcrypt.compare(password,checkUser.password)
+        console.log(isPasswordCorrect);
     } catch (error) {
         console.log(error);
     }
 }
 
-export { registerUser }
+export { registerUser, loginUser }
