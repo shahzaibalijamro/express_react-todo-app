@@ -12,7 +12,7 @@ const todoSchema = new mongoose.Schema(
         },
     },
     {
-        timestamps: true, // Ensures only schema-defined fields are saved in the database
+        timestamps: true,
     }
 );
 
