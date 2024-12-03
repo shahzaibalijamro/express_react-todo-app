@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import User from "../model/users.models.js"
 
 const registerUser = async (req, res) => {
-    const { userName, fullName, email, password } = req.body;
+    const { username, fullname, email, password } = req.body;
     try {
-        const user = await User.create({username: userName,fullname: fullName,email,password})
+        const user = await User.create({username,fullname,email,password})
         res.status(201).json({
             message: "New user created",
             user,

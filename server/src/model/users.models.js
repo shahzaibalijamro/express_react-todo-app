@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt"
 const userSchema = new mongoose.Schema({
-    userName: {
+    username: {
         type: String,
         required: [true, 'Username is required!'],
         unique: true,
         lowercase: true
     },
-    fullName: {
+    fullname: {
         type: String,
         required: [true, 'Fullname is required!'],
     },
@@ -40,4 +40,4 @@ userSchema.pre("save", async function (next) {
 })
 
 
-export const User = mongoose.model("User", userSchema, 'users')
+export default mongoose.model("User", userSchema, 'users')

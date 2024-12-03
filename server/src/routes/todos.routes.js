@@ -4,25 +4,25 @@ import { addTodo, allTodos, editTodo, singleTodo, deleteTodo, addDone, allDones 
 const todoRouter = express.Router();
 
 //add Todo
-router.post("/addtodo", addTodo)
+todoRouter.post("/addtodo", addTodo)
 
 //complete Todo
-router.put("/adddone/:id", addDone)
+todoRouter.put("/adddone/:id", addDone)
 
 //get all Todos
-router.get("/alltodos", allTodos)
+todoRouter.get("/alltodos", allTodos)
 
 //get all completed Todos
-router.get("/alldones", allDones)
+todoRouter.get("/alldones", allDones)
 
 //edit Todos
-router.put("/edittodo/:id", editTodo)
+todoRouter.put("/edittodo/:id", editTodo)
 
 //get single Todos
 
-router.get("/singletodo/:id", singleTodo)
+todoRouter.get("/singletodo/:id", singleTodo)
 
 //delete Todo
-router.delete("/deletetodo/:id", deleteTodo)
+todoRouter.delete("/deletetodo/:id", deleteTodo)
 
 export { todoRouter }
