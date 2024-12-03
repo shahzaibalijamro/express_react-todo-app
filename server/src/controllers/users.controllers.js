@@ -55,6 +55,8 @@ const registerUser = async (req, res) => {
         })
     } catch (error) {
         //error checking
+        console.log(error);
+        
         if (error.name === 'ValidationError') {
             return res.status(400).json({ message: error.message });
         }
@@ -89,7 +91,7 @@ const loginUser = async function (req,res) {
             message: "Invalid credentials"
         })
         const {accessToken, refreshToken} = generateAccessandRefreshTokens(user)
-        const updateRefreshTokenInDB = await User.findOneAndUpdate({email : email}, {$set: {refreshToken}}, {new: true})
+        const updateRefreshTokenInDB = await User.findOneAndUpdate({$or: [{email:email},{username:username}]}, {$set: {refreshToken}}, {new: true})
         if (!updateRefreshTokenInDB) return res.status(404).json({ message: "User not found" });
         res
         .cookie("accessToken",accessToken,{httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
@@ -107,6 +109,8 @@ const loginUser = async function (req,res) {
             }
         })
     } catch (error) {
+        console.log(error);
+
         console.log(error);
         res.status(500).json({ message: "An error occurred during login" });
     }
