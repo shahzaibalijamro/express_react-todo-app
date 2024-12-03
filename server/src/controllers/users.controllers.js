@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import User from "../model/users.models.js"
+import jwt from "jsonwebtoken"
 
 
 // generates tokens
@@ -61,6 +62,30 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "Username or email already exists." });
         }
         res.status(500).json({ message: 'Server error' });
+        console.log(error);
+    }
+}
+
+
+const loginUser = async function () {
+    const { username,email, password } = req.body;
+    try {
+        if (!username && !email) return res.status(400).json({
+            message: "Username or email is required!"
+        })
+        const checkUser = await User.findOne(
+            {
+                $or: [
+                    {email:email},
+                    {username:username}
+                ]
+            }
+        )
+        if(!checkUser) return res.status(404).json({
+            message: "No user found with such credentials"
+        })
+    } catch (error) {
+        console.log(error);
     }
 }
 
