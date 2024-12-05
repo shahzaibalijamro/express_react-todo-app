@@ -38,7 +38,7 @@ const registerUser = async (req, res) => {
         res
 
             //Adding cookies
-            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 1000 })
+            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 })
 
             //status code with json response
             .status(201).json({
@@ -91,7 +91,7 @@ const loginUser = async function (req, res) {
         const updateRefreshTokenInDB = await User.findOneAndUpdate({ $or: [{ email: email }, { username: username }] }, { $set: { refreshToken } }, { new: true })
         if (!updateRefreshTokenInDB) return res.status(404).json({ message: "User not found" });
         res
-            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 60 * 60 * 1000 })
+            .cookie("refreshToken", refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 })
             .status(200)
             .json({
                 message: "User successfully logged in!",
