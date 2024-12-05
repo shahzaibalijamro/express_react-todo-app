@@ -23,36 +23,52 @@ const App = () => {
 
   //getData
   useEffect(()=>{
-    
+    axios("http://localhost:3000/api/v1/alltodos")
+    .then(res => {
+      console.log(res.data);
+      const incomplete = res.data.allTodos.filter((item:{done:boolean}) => item.done === false)
+      setTodos(incomplete)
+      const completed = res.data.allTodos.filter((item:{done:boolean}) => item.done === true)
+      setDones(completed)
+    })
+    .catch(err => {
+      console.log(err);
+    })
   },[])
 
   //interfaces
   interface Todo {
-    todo: string,
-    id: number
+    title: string,
+    _id: string
   }
   interface Dones {
-    done: string,
-    id: number
+    title: string,
+    _id: string
   }
 
   //adds Todos
   const addTodo = async (e:any) => {
     e.preventDefault();
-    const id = Date.now()
     detectScrollbar()
-    todos.push({
-      todo: input,
-      id,
-    });
-    setTodos(todos);
+    try {
+      const newTodo = await axios.post("http://localhost:3000/api/v1/addtodo",{
+        "title" : input
+      })
+      setTodos([...todos,newTodo.data.todo]);
+    } catch (error:any) {
+      console.log(error.message);
+    }
     setInput('')
   }
 
   //adds Dones
-  const addDoneTodos = async (obj: { todo: string, id: number }, index: number) => {
+  const addDoneTodos = async (obj: { title: string, _id: string }, index: number) => {
     try {
-      setDones([...dones, { done: obj.todo, id: obj.id }]);
+      const newDone = await axios.put(`http://localhost:3000/api/v1/adddone/${obj._id}`)
+      if (!newDone) {
+        return console.log('Something went wrong!')
+      }
+      setDones([...dones, newDone.data.done]);
       setTodos(todos.filter((_, i) => i !== index))
     } catch (error) {
       console.log(error);
@@ -61,14 +77,22 @@ const App = () => {
   }
 
   //deletes Todos
-  const deleteTodo = async (index: number, current: string) => {
-    if (current === 'toDo') {
-      setTodos(todos.filter((_, i) => i !== index))
-      return
-    }
-    if (current === 'done') {
-      const filteredDones = dones.filter((_, i) => i !== index)
-      setDones(filteredDones)
+  const deleteTodo = async (obj: { title: string, _id: string }, index: number, current: string) => {
+    try {
+      const deletedTodo = await axios.delete(`http://localhost:3000/api/v1/deletetodo/${obj._id}`)
+      if (!deletedTodo) {
+        return console.log('Something went wrong!')
+      }
+      if (current === 'toDo') {
+        setTodos(todos.filter((_, i) => i !== index))
+        return
+      }
+      if (current === 'done') {
+        const filteredDones = dones.filter((_, i) => i !== index)
+        setDones(filteredDones)
+      }
+    } catch (error) {
+      console.log(error);
     }
     detectScrollbar()
   }
@@ -78,10 +102,10 @@ const App = () => {
     document.documentElement.classList.add("modal-open");
     modalRef.current.showModal();
     if (current === 'toDo') {
-      setEdit(todos[index].todo)
+      setEdit(todos[index].title)
     }
     if (current === 'done') {
-      setEdit(dones[index].done)
+      setEdit(dones[index].title)
       setCurrentEdit('done')
     }
     setEditIndex(index)
@@ -92,18 +116,34 @@ const App = () => {
 
   //edits Todos
   const editTodo = async () => {
-    if (currentEdit === 'done') {
-      dones[editIndex].done = edit;
-      setDones([...dones])
+    try {
+      if (currentEdit === 'done') {
+        const updatedTodo = await axios.put(`http://localhost:3000/api/v1/edittodo/${dones[editIndex]._id}`,{
+          "title" : edit
+        })
+        if (!updatedTodo) {
+          return console.log('Something went wrong!')
+        }
+        dones[editIndex].title = edit;
+        setDones([...dones])
+        setCurrentEdit(null)
+        return
+      }
+      const updatedTodo = await axios.put(`http://localhost:3000/api/v1/edittodo/${todos[editIndex]._id}`,{
+        "title" : edit
+      })
+      if (!updatedTodo) {
+        return console.log('Something went wrong!')
+      }
+      todos[editIndex].title = edit;
+      setTodos([...todos])
+      document.documentElement.classList.remove("modal-open");
+      modalRef.current.close();
+      setEditIndex(0)
       setCurrentEdit(null)
-      return
+    } catch (error) {
+      console.log(error);
     }
-    todos[editIndex].todo = edit;
-    setTodos([...todos])
-    document.documentElement.classList.remove("modal-open");
-    modalRef.current.close();
-    setEditIndex(0)
-    setCurrentEdit(null)
     detectScrollbar();
   }
 
@@ -136,9 +176,9 @@ const App = () => {
           <div>
             {current === 'toDo' && <>
               {todos.length > 0 ? todos.map((item: Todo, index: number) => {
-                return <div key={item.id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
+                return <div key={item._id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
                   <div>
-                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.todo}</h1>
+                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.title}</h1>
                   </div>
                   <div>
                     <div className='flex items-center'>
@@ -154,7 +194,7 @@ const App = () => {
                         className="me-4 cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]"
                         alt="Done"
                       />
-                      <img onClick={() => deleteTodo(index, 'toDo')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
+                      <img onClick={() => deleteTodo(item, index, 'toDo')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
                     </div>
                   </div>
                 </div>
@@ -164,9 +204,9 @@ const App = () => {
             </>}
             {current === 'done' && <>
               {dones.length > 0 ? dones.map((item: Dones, index: number) => {
-                return <div key={item.id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
+                return <div key={item._id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
                   <div>
-                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.done}</h1>
+                    <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.title}</h1>
                   </div>
                   <div>
                     <div className='flex items-center'>
@@ -176,7 +216,7 @@ const App = () => {
                         className="me-4 cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]"
                         alt="Done"
                       />
-                      <img onClick={() => deleteTodo(index, 'done')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
+                      <img onClick={() => deleteTodo(item,index, 'done')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
                     </div>
                   </div>
                 </div>
@@ -194,7 +234,7 @@ const App = () => {
             <form onSubmit={editTodo} className='flex flex-col w-full' method="dialog">
               <input type="text" value={edit} onChange={e => setEdit(e.target.value)} placeholder="Edit" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
               <div className='w-full text-end mt-[15px]'>
-              <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Button</button>
+              <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Edit</button>
               </div>
             </form>
           </div>
