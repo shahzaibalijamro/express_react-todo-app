@@ -38,7 +38,7 @@ const registerUser = async (req, res) => {
         res
 
         //Adding cookies
-        .cookie("accessToken", accessToken, {httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
+        .cookie("refreshToken", refreshToken, {httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
 
         //status code with json response
         .status(201).json({
@@ -50,21 +50,18 @@ const registerUser = async (req, res) => {
                 _id: user._id
             },
             tokens: {
-                accessToken
+                accessToken,refreshToken
             }
         })
     } catch (error) {
         //error checking
-        console.log(error);
-        
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: error.message });
-        }
         if (error.code === 11000) {
             return res.status(400).json({ message: "Username or email already exists." });
         }
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        }
         res.status(500).json({ message: 'Server error' });
-        console.log(error);
     }
 }
 
@@ -94,7 +91,7 @@ const loginUser = async function (req,res) {
         const updateRefreshTokenInDB = await User.findOneAndUpdate({$or: [{email:email},{username:username}]}, {$set: {refreshToken}}, {new: true})
         if (!updateRefreshTokenInDB) return res.status(404).json({ message: "User not found" });
         res
-        .cookie("accessToken",accessToken,{httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
+        .cookie("refreshToken",refreshToken,{httpOnly: true,secure: process.env.NODE_ENV === 'production',maxAge: 60 * 60 * 1000})
         .status(200)
         .json({
             message: "User successfully logged in!",
@@ -105,15 +102,17 @@ const loginUser = async function (req,res) {
                 _id: user._id
             },
             tokens: {
-                accessToken
+                accessToken,refreshToken
             }
         })
     } catch (error) {
-        console.log(error);
-
-        console.log(error);
         res.status(500).json({ message: "An error occurred during login" });
     }
+}
+
+
+const logoutUser = () => {
+    
 }
 
 export { registerUser, loginUser }
