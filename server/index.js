@@ -2,11 +2,9 @@ import dotenv from "dotenv"
 dotenv.config()
 import {app} from "./app.js"
 import { todoRouter } from "./src/routes/todos.routes.js"
-import { userRouter } from "./src/routes/users.routes.js"
 import { connectDB } from "./src/db/index.js"
 
 app.use("/api/v1", todoRouter)
-app.use("/api/v1", userRouter)
 
 
 connectDB()
