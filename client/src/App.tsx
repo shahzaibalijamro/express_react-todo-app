@@ -10,11 +10,12 @@ import axios from 'axios';
 
 const App = () => {
   //states
+  const [loading, setLoading] = useState<boolean>(true);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [dones, setDones] = useState<Dones[]>([]);
   const [input, setInput] = useState<string>('');
-  const [edit,setEdit] = useState<string>('');
-  const [editIndex,setEditIndex] = useState<number>(0)
+  const [edit, setEdit] = useState<string>('');
+  const [editIndex, setEditIndex] = useState<number>(0)
   const [current, setCurrent] = useState<'toDo' | 'done'>('toDo');
   const [currentEdit, setCurrentEdit] = useState<'toDo' | 'done' | null>(null);
 
@@ -22,19 +23,22 @@ const App = () => {
   const modalRef = useRef<any>()
 
   //getData
-  useEffect(()=>{
-    axios("http://localhost:3000/api/v1/alltodos")
-    .then(res => {
-      console.log(res.data);
-      const incomplete = res.data.allTodos.filter((item:{done:boolean}) => item.done === false)
-      setTodos(incomplete)
-      const completed = res.data.allTodos.filter((item:{done:boolean}) => item.done === true)
-      setDones(completed)
-    })
-    .catch(err => {
-      console.log(err);
-    })
-  },[])
+  useEffect(() => {
+    axios("https://express-react-todo-app.vercel.app/api/v1/alltodos")
+      .then(res => {
+        console.log(res.data);
+        const incomplete = res.data.allTodos.filter((item: { done: boolean }) => item.done === false)
+        setTodos(incomplete)
+        const completed = res.data.allTodos.filter((item: { done: boolean }) => item.done === true)
+        setDones(completed)
+      })
+      .catch(err => {
+        console.log(err);
+      })
+      .finally(() => {
+        setLoading(false)
+      });
+  }, [])
 
   //interfaces
   interface Todo {
@@ -47,15 +51,15 @@ const App = () => {
   }
 
   //adds Todos
-  const addTodo = async (e:any) => {
+  const addTodo = async (e: any) => {
     e.preventDefault();
     detectScrollbar()
     try {
-      const newTodo = await axios.post("http://localhost:3000/api/v1/addtodo",{
-        "title" : input
+      const newTodo = await axios.post("https://express-react-todo-app.vercel.app/api/v1/addtodo", {
+        "title": input
       })
-      setTodos([...todos,newTodo.data.todo]);
-    } catch (error:any) {
+      setTodos([...todos, newTodo.data.todo]);
+    } catch (error: any) {
       console.log(error.message);
     }
     setInput('')
@@ -64,7 +68,7 @@ const App = () => {
   //adds Dones
   const addDoneTodos = async (obj: { title: string, _id: string }, index: number) => {
     try {
-      const newDone = await axios.put(`http://localhost:3000/api/v1/adddone/${obj._id}`)
+      const newDone = await axios.put(`https://express-react-todo-app.vercel.app/api/v1/adddone/${obj._id}`)
       if (!newDone) {
         return console.log('Something went wrong!')
       }
@@ -79,7 +83,7 @@ const App = () => {
   //deletes Todos
   const deleteTodo = async (obj: { title: string, _id: string }, index: number, current: string) => {
     try {
-      const deletedTodo = await axios.delete(`http://localhost:3000/api/v1/deletetodo/${obj._id}`)
+      const deletedTodo = await axios.delete(`https://express-react-todo-app.vercel.app/api/v1/deletetodo/${obj._id}`)
       if (!deletedTodo) {
         return console.log('Something went wrong!')
       }
@@ -118,8 +122,8 @@ const App = () => {
   const editTodo = async () => {
     try {
       if (currentEdit === 'done') {
-        const updatedTodo = await axios.put(`http://localhost:3000/api/v1/edittodo/${dones[editIndex]._id}`,{
-          "title" : edit
+        const updatedTodo = await axios.put(`https://express-react-todo-app.vercel.app/api/v1/edittodo/${dones[editIndex]._id}`, {
+          "title": edit
         })
         if (!updatedTodo) {
           return console.log('Something went wrong!')
@@ -129,8 +133,8 @@ const App = () => {
         setCurrentEdit(null)
         return
       }
-      const updatedTodo = await axios.put(`http://localhost:3000/api/v1/edittodo/${todos[editIndex]._id}`,{
-        "title" : edit
+      const updatedTodo = await axios.put(`https://express-react-todo-app.vercel.app/api/v1/edittodo/${todos[editIndex]._id}`, {
+        "title": edit
       })
       if (!updatedTodo) {
         return console.log('Something went wrong!')
@@ -175,7 +179,9 @@ const App = () => {
           </div>
           <div>
             {current === 'toDo' && <>
-              {todos.length > 0 ? todos.map((item: Todo, index: number) => {
+              {loading ? <div className='mt-3 flex h-[72px] justify-center items-center'>
+                <span className="loading loading-dots loading-lg"></span>
+              </div> : todos.length > 0 && !loading ? todos.map((item: Todo, index: number) => {
                 return <div key={item._id} className='bg-[#15101C] rounded-xl flex justify-between mt-3 items-center p-6'>
                   <div>
                     <h1 className='text-[#9E78CF] font-inter text-[16px]'>{item.title}</h1>
@@ -216,7 +222,7 @@ const App = () => {
                         className="me-4 cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]"
                         alt="Done"
                       />
-                      <img onClick={() => deleteTodo(item,index, 'done')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
+                      <img onClick={() => deleteTodo(item, index, 'done')} src={Trash} className="cursor-pointer transform ease-in-out transition-transform duration-300 w-[18px] h-[19px] hover:w-[20px] hover:h-[20px]" alt="Delete" />
                     </div>
                   </div>
                 </div>
@@ -234,7 +240,7 @@ const App = () => {
             <form onSubmit={editTodo} className='flex flex-col w-full' method="dialog">
               <input type="text" value={edit} onChange={e => setEdit(e.target.value)} placeholder="Edit" className="input me-4 focus:outline-offset-2 focus:outline-[#9E78CF] focus-within:outline-offset-2 focus-within:outline-[#9E78CF] bg-[#1D1825] border-[#9E78CF] w-full" />
               <div className='w-full text-end mt-[15px]'>
-              <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Edit</button>
+                <button className="btn hover:bg-[#1D1825] hover:text-[#b984ff] text-white bg-[#9E78CF]">Edit</button>
               </div>
             </form>
           </div>
